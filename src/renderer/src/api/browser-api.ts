@@ -120,8 +120,13 @@ export class BrowserApi implements ApplicationAPI {
   private appOS: OS | null = null;
 
   constructor() {
+    const runtimeBaseUrl = (window as unknown as { __AIDERDESK_API_BASE_URL__?: string }).__AIDERDESK_API_BASE_URL__;
+    const configuredBaseUrl = import.meta.env.VITE_AIDERDESK_API_BASE_URL as string | undefined;
+
     const port = window.location.port === '5173' ? '24337' : window.location.port;
-    const baseUrl = `${window.location.protocol}//${window.location.hostname}${port ? `:${port}` : ''}`;
+    const fallbackBaseUrl = `${window.location.protocol}//${window.location.hostname}${port ? `:${port}` : ''}`;
+
+    const baseUrl = (runtimeBaseUrl || (configuredBaseUrl && configuredBaseUrl.length > 0 ? configuredBaseUrl : fallbackBaseUrl)).replace(/\/$/, '');
 
     this.socket = io(baseUrl, {
       autoConnect: true,
